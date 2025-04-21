@@ -1,39 +1,40 @@
-# main.py – GPT ChatBot API mit FastAPI
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-import openai
 import os
+from openai import OpenAI
 
 app = FastAPI()
 
-# CORS (damit Website auf API zugreifen darf)
+# CORS Setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Für Produktion ggf. Domain angeben
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# /chat Endpoint
+# OpenAI Client vorbereiten
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 @app.get("/chat")
 async def chat(request: Request):
     question = request.query_params.get("question", "")
+
     if not question:
         return {"error": "Keine Frage erhalten."}
 
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",
+        response = client.chat.completions.create(
+            model="gpt-4o",  # Oder gpt-3.5-turbo
             messages=[
-                {"role": "system", "content": "Du bist ein hilfreicher ChatBot für bepresent-webdesign.de. Antworte klar, verständlich und freundlich."},
+                {"role": "system", "content": "Du bist ein hilfreicher ChatBot für bepresent-webdesign.de. Antworte klar, freundlich und ehrlich."},
                 {"role": "user", "content": question}
             ]
         )
-        answer = response["choices"][0]["message"]["content"]
+        answer = response.choices[0].message.content
         return {"answer": answer}
 
     except Exception as e:
         return {"error": str(e)}
+

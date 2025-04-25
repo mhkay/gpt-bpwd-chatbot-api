@@ -1,10 +1,20 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import openai
 import os
-from openai import OpenAI
+from dotenv import load_dotenv
+
+# .env laden
+load_dotenv()
+
+# OpenRouter API nutzen (nicht OpenAI direkt)
+openai.api_key = os.getenv("OPENROUTER_API_KEY")
+openai.api_base = "https://openrouter.ai/api/v1"
 
 app = FastAPI()
 
+# CORS freigeben
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,8 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+# Wissensbasis
 korpus = """
 Webdesign – Leistungsangebot:
 - Erstellung professioneller, individueller Webseiten
@@ -38,7 +47,7 @@ KI-Angebote:
 - Preise: ab 180 €
 - Themen: ChatGPT, Prompting, Bilderzeugung, Videoproduktion, Avatarerstellung, Stimmen
 - Unterstützung beim Einbau von KI-Tools in Webseiten
-- Erstellung von einfachen KI-Agenten (z. B. für Jobsuche)
+- Erstellung von einfachen KI-Agenten (z. B. für Jobsuche)
 - Beratung zu Ethik und rechtlichen Aspekten bei KI-Einsatz
 
 Preisliste (Auszug):
@@ -68,7 +77,7 @@ Hier sind Informationen über die Angebote, Leistungen, Preise und FAQs:
 {korpus}
 
 Wenn du zu einer gestellten Frage keine Information im obigen Text findest, dann antworte:
-\"Zu dieser Frage liegen mir leider keine Informationen vor. Bitte wenden Sie sich per Email oder telefonisch an uns. Die Informationen dazu finden Sie auf der Kontaktseite https://bepresent-webdesign.de/Kontakt.html\"
+"Zu dieser Frage liegen mir leider keine Informationen vor. Bitte wenden Sie sich per Email oder telefonisch an uns. Die Informationen dazu finden Sie auf der Kontaktseite https://bepresent-webdesign.de/Kontakt.html"
 
 Sprich den Nutzer direkt an, sei hilfsbereit, höflich und sachlich.
 """
@@ -78,18 +87,18 @@ async def chat(request: Request):
     question = request.query_params.get("question", "")
 
     if not question:
-        return {"error": "Keine Frage erhalten."}
+        return JSONResponse(content={"error": "Keine Frage erhalten."}, status_code=400)
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
+        response = openai.ChatCompletion.create(
+            model="mistralai/mistral-7b-instruct",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Frage: {question}"}
+                {"role": "user", "content": question}
             ]
         )
-        answer = response.choices[0].message.content
-        return {"answer": f"Hallo, ich bin ein KI-Chatbot und beantworte Ihre Fragen:\n\n{answer}"}
+        answer = response.choices[0].message.content.strip()
+        return JSONResponse(content={"answer": f"Hallo, ich bin ein KI-Chatbot und beantworte Ihre Fragen:\n\n{answer}"})
 
     except Exception as e:
-        return {"error": str(e)}
+        return JSONResponse(content={"error": str(e)}, status_code=500)

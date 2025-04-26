@@ -91,7 +91,7 @@ async def chat(request: Request):
 
     try:
         response = openai.ChatCompletion.create(
-            model="mistralai/mistral-7b-instruct",
+            model="nous-hermes-2-mixtral",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": question}

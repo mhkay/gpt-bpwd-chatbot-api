@@ -69,7 +69,7 @@ FAQ:
 - Welche Regionen decken Sie ab? → Online bundesweit, vor Ort im Raum NRW.
 """
 
-system_prompt = f"""
+system_prompt = """
 Du bist ein freundlicher und ehrlicher KI-ChatBot für die Website bepresent-webdesign.de.
 
 Hier sind Informationen über die Angebote, Leistungen, Preise und FAQs:

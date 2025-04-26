@@ -1,27 +1,23 @@
+# main.py - GPT-4o Anbindung an bepresent-webdesign.de, mit sauberen Fehler-Logs und stabilem CORS
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import openai
 import os
-from dotenv import load_dotenv
+import openai
 
-# .env laden
-load_dotenv()
-
-# OpenRouter API nutzen (nicht OpenAI direkt)
-openai.api_key = os.getenv("OPENAI_API_KEY")
-# openai.api_base = "https://openrouter.ai/api/v1"
-
+# FastAPI App initialisieren
 app = FastAPI()
 
-# CORS freigeben
+# CORS Einstellungen
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["*"],  # Erlaube Anfragen von allen Domains (für öffentliche Webseite ok)
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# OpenAI API-Key aus Umgebungsvariablen holen
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Wissensbasis
 korpus = """
@@ -66,39 +62,40 @@ FAQ:
 - Wie läuft ein KI-Workshop ab? → Theorie + Praxis, live am Rechner, individuell angepasst.
 - Welche Tools werden verwendet? → ChatGPT, DALL·E, ElevenLabs, Heygen, Canva, u. a.
 - Wird Datenschutz beachtet? → Ja, DSGVO wird berücksichtigt, inkl. Impressum/Kontakt.
-- Welche Regionen decken Sie ab? → Online bundesweit, vor Ort im Raum NRW.
+- Welche Regionen decken Sie ab? → Online bundesweit, vor Ort im Raum Landshut.
 """
 
-system_prompt = """
-Du bist ein freundlicher und ehrlicher KI-ChatBot für die Website bepresent-webdesign.de.
 
-Hier sind Informationen über die Angebote, Leistungen, Preise und FAQs:
-
-{korpus}
-
-Wenn du zu einer gestellten Frage keine Information im obigen Text findest, dann antworte:
-"Zu dieser Frage liegen mir leider keine Informationen vor. Bitte wenden Sie sich per Email oder telefonisch an uns. Die Informationen dazu finden Sie auf der Kontaktseite https://bepresent-webdesign.de/Kontakt.html"
-
-Sprich den Nutzer direkt an, sei hilfsbereit, höflich und sachlich.
-"""
-
+# Endpoint für den ChatBot
 @app.get("/chat")
 async def chat(request: Request):
-    question = request.query_params.get("question", "")
-
-    if not question:
-        return JSONResponse(content={"error": "Keine Frage erhalten."}, status_code=400)
-
     try:
+        question = request.query_params.get("question")
+        if not question:
+            return {"error": "Keine Frage übermittelt."}
+
+        # Anfrage an OpenAI senden
         response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": "Du bist ein freundlicher Assistent für die Webseite bepresent-webdesign.de. Wenn du eine Frage nicht beantworten kannst, verweise bitte auf die Kontaktseite https://bepresent-webdesign.de/Kontakt.html."},
                 {"role": "user", "content": question}
-            ]
+            ],
+            max_tokens=400
         )
-        answer = response.choices[0].message.content.strip()
-        return JSONResponse(content={"answer": f"Hallo, ich bin ein KI-Chatbot und beantworte Ihre Fragen:\n\n{answer}"})
+
+        # Antwort extrahieren
+        answer = response['choices'][0]['message']['content'].strip()
+
+        # Antwort an den Browser schicken
+        return {"frage": question, "antwort": answer}
 
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        # Fehler abfangen und in Render-Log ausgeben
+        print(f"❗ Fehler im Chat-Endpunkt: {e}")
+        return {"error": f"Interner Serverfehler: {str(e)}"}
+
+# (Optional) Root-Endpunkt, falls Render eine Startseite verlangt
+@app.get("/")
+async def root():
+    return {"message": "ChatBot API laeuft!"}

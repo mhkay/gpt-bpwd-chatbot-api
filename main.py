@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # OpenRouter API nutzen (nicht OpenAI direkt)
-openai.api_key = os.getenv("OPENROUTER_API_KEY")
-openai.api_base = "https://openrouter.ai/api/v1"
+openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_base = "https://openrouter.ai/api/v1"
 
 app = FastAPI()
 

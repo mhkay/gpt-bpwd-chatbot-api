@@ -2,8 +2,6 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from openai import OpenAI
-import datetime
-import httpx  # NEU: Für HTTP-Requests
 
 app = FastAPI()
 
@@ -16,9 +14,6 @@ app.add_middleware(
 )
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-USAGE_LIMIT = 0.20  # Tageslimit in USD
 
 korpus = """
 Webdesign – Leistungsangebot:
@@ -78,38 +73,12 @@ Wenn du zu einer gestellten Frage keine Information im obigen Text findest, dann
 Sprich den Nutzer direkt an, sei hilfsbereit, höflich und sachlich.
 """
 
-async def check_usage_limit():
-    today = datetime.datetime.utcnow().date()
-    start_date = today.strftime("%Y-%m-%d")
-    end_date = today.strftime("%Y-%m-%d")
-
-    url = f"https://api.openai.com/v1/dashboard/billing/usage?start_date={start_date}&end_date={end_date}"
-
-    headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=headers)
-        if response.status_code == 200:
-            usage_data = response.json()
-            total_usage = usage_data.get("total_usage", 0) / 100  # OpenAI gibt usage in Cent
-            return total_usage
-        else:
-            return 0  # Wenn die Abfrage fehlschlägt, lieber nicht blockieren
-
 @app.get("/chat")
 async def chat(request: Request):
     question = request.query_params.get("question", "")
 
     if not question:
         return {"error": "Keine Frage erhalten."}
-
-    usage_today = await check_usage_limit()  # ✅ richtig eingerückt!
-    if usage_today > USAGE_LIMIT:
-        return {
-            "error": "Das tägliche Nutzungslimit für den KI-ChatBot wurde erreicht. Bitte versuchen Sie es morgen erneut oder kontaktieren Sie uns direkt."
-        }
 
     try:
         response = client.chat.completions.create(

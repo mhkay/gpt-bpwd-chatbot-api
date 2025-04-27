@@ -3,7 +3,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import os
-import openai
+from openai import OpenAI
 
 # FastAPI App initialisieren
 app = FastAPI()
@@ -11,13 +11,14 @@ app = FastAPI()
 # CORS Einstellungen
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Erlaube Anfragen von allen Domains (für öffentliche Webseite ok)
+    allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # OpenAI API-Key aus Umgebungsvariablen holen
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Wissensbasis
 korpus = """
@@ -75,7 +76,7 @@ async def chat(request: Request):
             return {"error": "Keine Frage übermittelt."}
 
         # Anfrage an OpenAI senden
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "Du bist ein freundlicher Assistent für die Webseite bepresent-webdesign.de. Wenn du eine Frage nicht beantworten kannst, verweise bitte auf die Kontaktseite https://bepresent-webdesign.de/Kontakt.html."},

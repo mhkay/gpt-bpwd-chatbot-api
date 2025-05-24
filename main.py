@@ -130,7 +130,7 @@ async def chat(request: Request):
         return {"error": str(e)}
 
 # -----------------------------------------------------------
-# NEU: /chat-voice Endpoint für ElevenLabs MP3 Ausgabe
+# NEU: /chat-voice Endpoint für OpenAI TTS
 # -----------------------------------------------------------
 
 from fastapi import status
@@ -149,7 +149,7 @@ async def chat_voice(request: Request):
         print("Usage-Limit erreicht.")
         return Response(content="Usage-Limit erreicht.", status_code=status.HTTP_429_TOO_MANY_REQUESTS)
 
-    # GPT-Antwort holen (wie /chat)
+    # GPT-Antwort holen
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -163,27 +163,30 @@ async def chat_voice(request: Request):
         print(f"Fehler beim Generieren der Antwort: {e}")
         return Response(content=f"Fehler beim Generieren der Antwort: {e}", status_code=500)
 
-    # ElevenLabs TTS API
+    # OpenAI Text-to-Speech API aufrufen
     try:
-        tts_api_url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
+        import requests
+
+        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        url = "https://api.openai.com/v1/audio/speech"
         headers = {
-            "xi-api-key": ELEVENLABS_API_KEY,
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
             "Content-Type": "application/json"
         }
         payload = {
-            "text": answer,
-            "model_id": "eleven_multilingual_v2",
-            "voice_settings": {
-                "stability": 0.75,
-                "similarity_boost": 0.75
-            }
+            "model": "tts-1",                # Oder "tts-1-hd" für beste Qualität (etwas teurer)
+            "input": answer,
+            "voice": "onyx",                  # Ändere zu: "alloy", "echo", "fable", "nova", "onyx", "shimmer"
+            "response_format": "mp3",
+            "speed": 1.0
         }
-        tts_response = requests.post(tts_api_url, headers=headers, json=payload)
+
+        tts_response = requests.post(url, headers=headers, json=payload)
         if tts_response.status_code == 200:
             return Response(content=tts_response.content, media_type="audio/mpeg")
         else:
-            print(f"Fehler bei ElevenLabs: {tts_response.status_code} - {tts_response.text}")
-            return Response(content=f"Fehler bei ElevenLabs: {tts_response.text}", status_code=500)
+            print(f"Fehler bei OpenAI TTS: {tts_response.status_code} - {tts_response.text}")
+            return Response(content=f"Fehler bei OpenAI TTS: {tts_response.text}", status_code=500)
     except Exception as e:
-        print(f"Fehler bei ElevenLabs: {e}")
-        return Response(content=f"Fehler bei ElevenLabs: {e}", status_code=500)
+        print(f"Fehler bei OpenAI TTS: {e}")
+        return Response(content=f"Fehler bei OpenAI TTS: {e}", status_code=500)

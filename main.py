@@ -21,9 +21,6 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 USAGE_LIMIT = 0.20  # Tageslimit in USD
 
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY") or "HIER_DEIN_API_KEY"
-ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID") or "HIER_DEINE_VOICE_ID"
-
 korpus = """
 Webdesign – Leistungsangebot:
 - Erstellung professioneller, individueller Webseiten

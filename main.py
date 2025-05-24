@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from openai import OpenAI
 import datetime
 import httpx  # NEU: Für HTTP-Requests
+import requests  # Für ElevenLabs POST
 
 app = FastAPI()
 
@@ -19,6 +20,9 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 USAGE_LIMIT = 0.20  # Tageslimit in USD
+
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY") or "HIER_DEIN_API_KEY"
+ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID") or "HIER_DEINE_VOICE_ID"
 
 korpus = """
 Webdesign – Leistungsangebot:
@@ -125,4 +129,56 @@ async def chat(request: Request):
     except Exception as e:
         return {"error": str(e)}
 
+# -----------------------------------------------------------
+# NEU: /chat-voice Endpoint für ElevenLabs MP3 Ausgabe
+# -----------------------------------------------------------
 
+from fastapi import status
+
+@app.post("/chat-voice")
+async def chat_voice(request: Request):
+    data = await request.json()
+    question = data.get("question", "")
+
+    if not question:
+        return Response(content="Keine Frage erhalten.", status_code=status.HTTP_400_BAD_REQUEST)
+
+    usage_today = await check_usage_limit()
+    if usage_today > USAGE_LIMIT:
+        return Response(content="Usage-Limit erreicht.", status_code=status.HTTP_429_TOO_MANY_REQUESTS)
+
+    # GPT-Antwort holen (wie /chat)
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Frage: {question}"}
+            ]
+        )
+        answer = response.choices[0].message.content
+    except Exception as e:
+        return Response(content=f"Fehler beim Generieren der Antwort: {e}", status_code=500)
+
+    # ElevenLabs TTS API
+    try:
+        tts_api_url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
+        headers = {
+            "xi-api-key": ELEVENLABS_API_KEY,
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "text": answer,
+            "model_id": "eleven_multilingual_v2",
+            "voice_settings": {
+                "stability": 0.75,
+                "similarity_boost": 0.75
+            }
+        }
+        tts_response = requests.post(tts_api_url, headers=headers, json=payload)
+        if tts_response.status_code == 200:
+            return Response(content=tts_response.content, media_type="audio/mpeg")
+        else:
+            return Response(content=f"Fehler bei ElevenLabs: {tts_response.text}", status_code=500)
+    except Exception as e:
+        return Response(content=f"Fehler bei ElevenLabs: {e}", status_code=500)

@@ -141,10 +141,12 @@ async def chat_voice(request: Request):
     question = data.get("question", "")
 
     if not question:
+        print("Keine Frage erhalten.")
         return Response(content="Keine Frage erhalten.", status_code=status.HTTP_400_BAD_REQUEST)
 
     usage_today = await check_usage_limit()
     if usage_today > USAGE_LIMIT:
+        print("Usage-Limit erreicht.")
         return Response(content="Usage-Limit erreicht.", status_code=status.HTTP_429_TOO_MANY_REQUESTS)
 
     # GPT-Antwort holen (wie /chat)
@@ -158,6 +160,7 @@ async def chat_voice(request: Request):
         )
         answer = response.choices[0].message.content
     except Exception as e:
+        print(f"Fehler beim Generieren der Antwort: {e}")
         return Response(content=f"Fehler beim Generieren der Antwort: {e}", status_code=500)
 
     # ElevenLabs TTS API
@@ -179,6 +182,8 @@ async def chat_voice(request: Request):
         if tts_response.status_code == 200:
             return Response(content=tts_response.content, media_type="audio/mpeg")
         else:
+            print(f"Fehler bei ElevenLabs: {tts_response.status_code} - {tts_response.text}")
             return Response(content=f"Fehler bei ElevenLabs: {tts_response.text}", status_code=500)
     except Exception as e:
+        print(f"Fehler bei ElevenLabs: {e}")
         return Response(content=f"Fehler bei ElevenLabs: {e}", status_code=500)

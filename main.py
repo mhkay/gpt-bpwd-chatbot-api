@@ -63,7 +63,7 @@ FAQ:
 - Wie läuft ein KI-Workshop ab? → Theorie + Praxis, live am Rechner, individuell angepasst.
 - Welche Tools werden verwendet? → ChatGPT, DALL·E, ElevenLabs, Heygen, Canva, u. a.
 - Wird Datenschutz beachtet? → Ja, DSGVO wird berücksichtigt, inkl. Impressum/Kontakt.
-- Welche Regionen decken Sie ab? → Online bundesweit, vor Ort im Raum NRW.
+- Welche Regionen decken Sie ab? → Online bundesweit, vor Ort im Raum Landshut und Umkreis.
 """
 
 system_prompt = f"""

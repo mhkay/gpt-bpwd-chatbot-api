@@ -1,10 +1,15 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, UploadFile, File, status
 from fastapi.middleware.cors import CORSMiddleware
+
 import os
-from openai import OpenAI
+import mimetypes
 import datetime
-import httpx  # NEU: Für HTTP-Requests
-import requests  # Für ElevenLabs POST
+
+import requests      # Für HTTP-Requests an OpenAI Whisper & TTS
+import httpx         # Für asynchrone HTTP-Requests, z.B. bei Usage-Check
+
+from openai import OpenAI
+
 
 app = FastAPI()
 
@@ -127,10 +132,43 @@ async def chat(request: Request):
         return {"error": str(e)}
 
 # -----------------------------------------------------------
-# NEU: /chat-voice Endpoint für OpenAI TTS
+# NEU: /transcribe Endpoint für Whisper Speech-to-Text
 # -----------------------------------------------------------
 
-from fastapi import status
+@app.post("/transcribe")
+async def transcribe(file: UploadFile = File(...)):
+    try:
+        # Lade Datei ins Memory (binary)
+        audio_bytes = await file.read()
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}"
+        }
+        files = {
+            'file': (file.filename, audio_bytes, file.content_type or 'audio/webm')
+        }
+        data = {
+            "model": "whisper-1",
+            "language": "de"
+        }
+        response = requests.post(
+            "https://api.openai.com/v1/audio/transcriptions",
+            headers=headers,
+            files=files,
+            data=data,
+        )
+        if response.status_code == 200:
+            text = response.json().get("text", "")
+            return {"text": text}
+        else:
+            print(f"Fehler bei Whisper-Transkription: {response.status_code} - {response.text}")
+            return {"text": ""}
+    except Exception as e:
+        print(f"Transcribe-Exception: {e}")
+        return {"text": ""}
+
+# -----------------------------------------------------------
+# NEU: /chat-voice Endpoint für OpenAI TTS
+# -----------------------------------------------------------
 
 @app.post("/chat-voice")
 async def chat_voice(request: Request):
@@ -162,9 +200,6 @@ async def chat_voice(request: Request):
 
     # OpenAI Text-to-Speech API aufrufen
     try:
-        import requests
-
-        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
         url = "https://api.openai.com/v1/audio/speech"
         headers = {
             "Authorization": f"Bearer {OPENAI_API_KEY}",

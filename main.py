@@ -43,7 +43,7 @@ Reparaturservice – Hardware & IT & Smartphones & iPhones:
 - Netzwerkinstallation und WLAN-Optimierung
 - Kaufberatung zu Neuanschaffungen
 - Austausch von Akkus für iPhones und andere Smartphones
-- Austausch von Displays und anderen Teilen von Smartphones
+- Austausch von Displays und anderen Teilen von iPhones & Smartphones
 
 KI-Angebote:
 - Einführung in KI-Nutzung für Privatpersonen und Unternehmen

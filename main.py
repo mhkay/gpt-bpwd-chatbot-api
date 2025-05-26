@@ -42,6 +42,7 @@ Reparaturservice – Hardware & IT:
 - Einrichtung von Betriebssystemen, Treibern und Software
 - Netzwerkinstallation und WLAN-Optimierung
 - Kaufberatung zu Neuanschaffungen
+- Austausch von Akkus für iPhones und andere Smartphones
 
 KI-Angebote:
 - Einführung in KI-Nutzung für Privatpersonen und Unternehmen

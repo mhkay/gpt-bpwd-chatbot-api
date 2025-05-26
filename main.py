@@ -42,8 +42,9 @@ Reparaturservice – Hardware & IT & Smartphones & iPhones:
 - Einrichtung von Betriebssystemen, Treibern und Software
 - Netzwerkinstallation und WLAN-Optimierung
 - Kaufberatung zu Neuanschaffungen
-- Austausch von Akkus für iPhones und andere Smartphones
-- Austausch von Displays und anderen Teilen von iPhones & Smartphones
+- Wir reparieren Smartphones und Tablets, Tablte Computer
+- Austausch von Akkus für iPhones, Samsung Phones und andere Smartphones und Tablets
+- Austausch von Displays und anderen Teilen von iPhones, Samsung Phones & andere Smartphones & Tablets
 
 KI-Angebote:
 - Einführung in KI-Nutzung für Privatpersonen und Unternehmen

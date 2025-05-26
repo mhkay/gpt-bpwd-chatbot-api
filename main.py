@@ -35,7 +35,7 @@ Webdesign – Leistungsangebot:
 - Optimierung bestehender Webseiten
 - Webhosting-Empfehlung & Domainberatung
 
-Reparaturservice – Hardware & IT:
+Reparaturservice – Hardware & IT & Smartphones & iPhones:
 - Reparatur von Computern, Laptops, Tablets, Druckern
 - Fehlerdiagnose und Austausch defekter Komponenten
 - Datenrettung und Systemwiederherstellung

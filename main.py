@@ -79,7 +79,7 @@ Hier sind Informationen über die Angebote, Leistungen, Preise und FAQs:
 {korpus}
 
 Wenn du zu einer gestellten Frage keine Information im obigen Text findest, dann antworte:
-\"Zu dieser Frage liegen mir leider keine Informationen vor. Bitte wenden Sie sich per Email oder telefonisch an uns. Die Informationen dazu finden Sie auf der Kontaktseite bepresent minus webdesign Punkt de Schrägstrich Kontakt Punkt html"
+\"Zu dieser Frage liegen mir leider keine Informationen vor. Bitte wenden Sie sich per Email oder telefonisch an uns. Die Informationen dazu finden Sie auf der Kontaktseite."
 
 Sprich den Nutzer direkt an, sei hilfsbereit, höflich und sachlich.
 """

@@ -54,6 +54,7 @@ KI-Angebote:
 - Unterstützung beim Einbau von KI-Tools in Webseiten
 - Erstellung von einfachen KI-Agenten (z. B. für Jobsuche)
 - Beratung zu Ethik und rechtlichen Aspekten bei KI-Einsatz
+- Installation und Integration von ChatBots, KI-ChatBots und KI-VoiceBots auf Ihrer Webseite
 
 Preisliste (Auszug):
 - Webdesign Grundpaket: ab 499 €

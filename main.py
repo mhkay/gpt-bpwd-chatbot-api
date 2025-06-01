@@ -219,7 +219,15 @@ async def chat_voice(request: Request):
 
         tts_response = requests.post(url, headers=headers, json=payload)
         if tts_response.status_code == 200:
-            return Response(content=tts_response.content, media_type="audio/mpeg")
+         return Response(
+        content=tts_response.content,
+        media_type="audio/mpeg",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Content-Disposition": "inline; filename=\"antwort.mp3\""
+        }
+    )
+
         else:
             print(f"Fehler bei OpenAI TTS: {tts_response.status_code} - {tts_response.text}")
             return Response(content=f"Fehler bei OpenAI TTS: {tts_response.text}", status_code=500)

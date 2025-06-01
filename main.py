@@ -148,7 +148,7 @@ async def transcribe(file: UploadFile = File(...)):
             "Authorization": f"Bearer {OPENAI_API_KEY}"
         }
         files = {
-            'file': (file.filename, audio_bytes, file.content_type or 'audio/webm')
+            'file': (file.filename, audio_bytes, 'audio/wav')
         }
         data = {
             "model": "whisper-1",
